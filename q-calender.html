@@ -1,0 +1,185 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <q-calender></q-calender>
+
+Example:
+
+    <q-calender>
+      <h2>Hello q-calender</h2>
+    </q-calender>
+
+@demo demo/index.html
+@hero hero.svg
+-->
+
+<dom-module id="q-calender">
+  <template>
+    <style>
+      :host {
+        display: block;
+        box-sizing: border-box;
+        color: #FFFFFF;
+        padding: 5px;
+        width: 360px;
+        height: 360px;
+        margin: auto;
+        background-color: rgba(0, 0, 0, 0.61);
+        border-radius: 10px;
+        --paper-input-container-input-color: #FFFFFF;
+        --paper-input-container-focus-color: #FFFFFF;
+      }
+      
+      .header {
+        margin-left: 4px;
+      }
+      
+      .dim {
+        color: #969696;
+      }
+      
+      .day {
+        font-size: 24px;
+        margin: 5px;
+        width: 40px;
+      }
+      
+      div[sel] {
+        text-decoration: underline;
+      }
+      
+      .selectable:hover {
+        text-decoration: underline;
+        cursor: pointer;
+      }
+    </style>
+    <div class="layout horizontal justified center header">
+      <paper-dropdown-menu>
+        <paper-listbox class="dropdown-content" selected="{{month}}">
+          <paper-item>January</paper-item>
+          <paper-item>February</paper-item>
+          <paper-item>March</paper-item>
+          <paper-item>April</paper-item>
+          <paper-item>May</paper-item>
+          <paper-item>June</paper-item>
+          <paper-item>July</paper-item>
+          <paper-item>August</paper-item>
+          <paper-item>September</paper-item>
+          <paper-item>October</paper-item>
+          <paper-item>November</paper-item>
+          <paper-item>December</paper-item>
+        </paper-listbox>
+      </paper-dropdown-menu>
+      <paper-input id="year" value="{{year}}" type="number" max="2016" min="2014" auto-validate error-message="not valid date." style="min-width:100px;"></paper-input>
+      <paper-icon-button id="last" icon="expand-less"></paper-icon-button>
+      <paper-icon-button id="next" icon="expand-more"></paper-icon-button>
+    </div>
+    <div class="layout horizontal justified wrap">
+      <div class="day dim">Su</div>
+      <div class="day dim">Mo</div>
+      <div class="day dim">Tu</div>
+      <div class="day dim">We</div>
+      <div class="day dim">Th</div>
+      <div class="day dim">Fr</div>
+      <div class="day dim">Sa</div>
+      <template is="dom-repeat" items="[[dates]]">
+        <div class$="[[item.inMonth]] day selectable" sel$="[[item.selected]]" on-click="select">[[item.day]]</div>
+      </template>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'q-calender',
+      listeners: {
+        'year.change': 'update'
+      },
+      properties: {
+        value: {
+          type: Date,
+          notify: true
+        },
+        // calendar days
+        dates: {
+          type: Array,
+          value: []
+        },
+        // calendar month
+        month: Number,
+        // calendar year
+        year: Number
+      },
+      // Element Lifecycle
+      ready: function() {
+        this.month = moment().month();
+        this.year = moment().year();
+        var day = moment().date(1).day(0);
+        this._loadDates(day);
+      },
+
+      attached: function() {
+        // `attached` fires once the element and its parents have been inserted
+        // into a document.
+        //
+        // This is a good place to perform any work related to your element's
+        // visual state or active behavior (measuring sizes, beginning animations,
+        // loading resources, etc).
+      },
+
+      detached: function() {
+        // The analog to `attached`, `detached` fires when the element has been
+        // removed from a document.
+        //
+        // Use this to clean up anything you did in `attached`.
+      },
+
+      // Element Behavior
+      select: function(e) {
+        var selected = e.model.item;
+        this.value = selected;
+      },
+      update: function(e) {
+        if (e.target.invalid) {
+          this.year = moment().year();
+        }
+        console.log(this.year);
+        var m = moment().year(this.year).month(this.month)
+        var day = m.date(1).day(0);
+        this._loadDates(day);
+      },
+      // internal functions
+      _loadDates: function(day) {
+        this.splice('dates', 0, this.dates.length);
+        for (var i = 0; i < 42; i++) {
+          var d = {};
+          d.day = day.date();
+          d.date = day.toDate();
+          d.inMonth = day.month() == this.month ? 'light' : 'dim'
+          d.selected = moment(this.value).isSame(day, 'day');
+          this.push('dates', d);
+          day.add(1, 'days');
+        }
+      }
+    });
+  </script>
+</dom-module>
